@@ -5,18 +5,19 @@ import os
 dictonnaire_francais = {}
 
 grammaire_francais = {
-    "P": ("SN","SV"),
-    "SN": ("ART:ind","NOM", "ADJ"),
-    "SV": ("VER", "SN"),
+    "P": ({"nom": "SN", "place": 1, "obligatoire": True},{"nom": "SV", "place": 2, "obligatoire": True},{"nom": "SPrep", "place": 3, "obligatoire": False}),
+    "SN": ({"nom": "ART:ind", "place": 1, "obligatoire": True},{"nom": "NOM", "place": 2, "obligatoire": True}, {"nom": "ADJ", "place": 3, "obligatoire": False}),
+    "SV": ({"nom": "VER", "place": 1, "obligatoire": True}, {"nom": "SN", "place": 2, "obligatoire": False}),
+    "SPrep": ({"nom": "PRE", "place": 1, "obligatoire": True},{"nom": "SN", "place": 2, "obligatoire": True})
 }
 
 
 def mot_selon_classe(classe, nombre, genre):
-    """ print(classe) """
     if classe != "":
         i = 0
         while True:
             rand_mot = random.choice(dictonnaire_francais[classe])
+            print(rand_mot)
             if(rand_mot["nombre"] == nombre and rand_mot["genre"] == "") or (rand_mot["nombre"] == "" and rand_mot["genre"] == genre) or (rand_mot["nombre"] == nombre and rand_mot["genre"] == genre):
                 return rand_mot
             elif(rand_mot["nombre"] == "" and rand_mot["genre"] == "" and classe == "VER"):
@@ -29,22 +30,22 @@ def mot_selon_classe(classe, nombre, genre):
 def VER(nombre, personne):
     while True:
         rand_mot = random.choice(dictonnaire_francais["VER"])
-        """ print(rand_mot) """
+        print(rand_mot)
         if rand_mot["info_verbe"]["nombreVerbe"] == nombre and rand_mot["info_verbe"]["personne"] == personne:
             return rand_mot
 
 def print_syntagme(syntagme, nombre, genre):
     phrase = ""
     for Synt in grammaire_francais[syntagme]:
-        if Synt in grammaire_francais.keys():
-            phrase += print_syntagme(Synt, nombre, genre)
+        if Synt["nom"] in grammaire_francais.keys():
+            phrase += print_syntagme(Synt["nom"], nombre, genre)
         else:
-            if Synt == "VER":
-                mot = globals()[Synt](nombre, "3")
+            if Synt["nom"] == "VER":
+                mot = globals()[Synt["nom"]](nombre, "3")
                 phrase += mot["mot"]
                 phrase += " "
             elif Synt != "":
-                mot = mot_selon_classe(Synt, nombre, genre)
+                mot = mot_selon_classe(Synt["nom"], nombre, genre)
                 phrase += mot["mot"]
                 phrase += " "
     return phrase
@@ -52,7 +53,7 @@ def print_syntagme(syntagme, nombre, genre):
 
 
 if __name__ == "__main__":
-    with open(r"generateur_de_phrases\database\Lexique383.tsv", encoding='utf-8') as file:
+    with open(r"database\Lexique383.tsv", encoding='utf-8') as file:
         tsv_file = csv.reader(file, delimiter="\t")
         for i, array in enumerate(tsv_file):
             (mot, classeGrammaticale, nombre, genre, info_verbe) = (array[0],array[3], array[5], array[4], array[10])
